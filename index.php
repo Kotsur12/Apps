@@ -1,6 +1,15 @@
 <?php
+error_reporting(E_ALL);
 
-use function Sodium\add;
+function console_log($output, $with_script_tags = true)
+{
+    $js_code = 'console.log(' . json_encode($output, JSON_HEX_TAG) .
+        ');';
+    if ($with_script_tags) {
+        $js_code = '<script>' . $js_code . '</script>';
+    }
+    echo $js_code;
+}
 
 class Category
 {
@@ -51,6 +60,7 @@ class MyPDO
 
         try {
             $this->_pdo = new PDO($dsn, $user, $pass, $options);
+            $this->_pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
         } catch (PDOException $e) {
             print "Error!: " . $e->getMessage() . "<br/>";
             die();
@@ -67,32 +77,55 @@ class MyPDO
 
     public function upPriority($id)
     {
-        $sql = 'UPDATE `category` SET `priority` = `priority` + 1 WHERE `id` = ?';
-        $stmt = $this->_pdo->prepare($sql);
-        $stmt->execute([$id]);
+        $max_priority = self::getMaxPriority();
 
-        //протестить этот запрос
-//        мы получаем id всех у кого одинаковое priority, нужно оттуда убрать те, у которых id = 1
-//        UPDATE `category` SET `priority` = `priority` + 1 WHERE `id` NOT IN (SELECT `id` FROM `category` WHERE `priority` IN (SELECT `priority` FROM `category` WHERE `id` = 1))
+        $current_priority = self::getCurrentPriority($id);
 
-        //протестить это!!!!
-//        UPDATE `category` SET `priority` = `priority` + 1 WHERE `id` IN (SELECT `id` FROM `category` WHERE `priority` IN (SELECT `priority` FROM `category` WHERE `id` = 1) AND `id` <> 1)
+        //не повышаем, если итак максимальная
+        if ($current_priority != $max_priority){
+            $sql = 'UPDATE `category` SET `priority` = `priority` + 1 WHERE `id` = ?';
+            $stmt = $this->_pdo->prepare($sql);
+            $stmt->execute([$id]);
 
+            $sql_2 = 'UPDATE `category` AS a SET `priority` = `priority` - 1 WHERE `id` != ? AND `priority` = (SELECT `priority` FROM (SELECT `priority` FROM `category` WHERE `id` = ?) as t)';
+            $stmt_2 = $this->_pdo->prepare($sql_2);
+            $stmt_2->execute([$id, $id]);
+        }
     }
 
     public function downPriority($id)
     {
-        $sql = 'UPDATE `category` SET `priority` = `priority` - 1 WHERE `id` = ?';
-        $stmt = $this->_pdo->prepare($sql);
-        $stmt->execute([$id]);
+        $current_priority = self::getCurrentPriority($id);
+
+        //не понижаем если минимальная (равна 1)
+        if ($current_priority != 1){
+            $sql = 'UPDATE `category` SET `priority` = `priority` - 1 WHERE `id` = ?';
+            $stmt = $this->_pdo->prepare($sql);
+            $stmt->execute([$id]);
+
+            $sql_2 = 'UPDATE `category` AS a SET `priority` = `priority` + 1 WHERE `id` != ? AND `priority` = (SELECT `priority` FROM (SELECT `priority` FROM `category` WHERE `id` = ?) as t)';
+            $stmt_2 = $this->_pdo->prepare($sql_2);
+            $stmt_2->execute([$id, $id]);
+        }
     }
 
-    public function getMaxPriority()
+    private function getMaxPriority()
     {
-        $sql = 'SELECT MAX(`priority`) FROM `category`';
-        $q = $this->_pdo->query($sql);
-        $q->setFetchMode(PDO::FETCH_ASSOC);
-        return $q;
+        $sql = 'SELECT MAX(`priority`) AS max_priority FROM `category`';
+        $statement = $this->_pdo->query($sql);
+        $statement->setFetchMode(PDO::FETCH_ASSOC);
+        $result = $statement->fetch();
+        return $result['max_priority'];
+    }
+
+    private function getCurrentPriority($id)
+    {
+        $sql = 'SELECT `priority` AS priority FROM `category` WHERE `id` = ?';
+        $statement = $this->_pdo->prepare($sql);
+        $statement->execute([$id]);
+        $statement->setFetchMode(PDO::FETCH_ASSOC);
+        $result = $statement->fetch();
+        return $result['priority'];
     }
 
     public function insert($name, $isShow)
@@ -104,9 +137,13 @@ class MyPDO
         $stmt->execute([$name, $priority, $isShow]);
     }
 
-
     public function deleteRow($id)
     {
+        $sql_2 = 'UPDATE `category` AS a SET `priority` = `priority` - 1 WHERE `id` != ? AND `priority` > (SELECT `priority` FROM (SELECT `priority` FROM `category` WHERE `id` = ?) as t)';
+
+        $stmt_2 = $this->_pdo->prepare($sql_2);
+        $stmt_2->execute([$id, $id]);
+
         $sql = 'DELETE FROM `category` WHERE `id` = ?';
         $stmt = $this->_pdo->prepare($sql);
         $stmt->execute([$id]);
@@ -171,17 +208,16 @@ $categories = $pdo->getRows();
             location.href = location.origin + "/?action=down&cat_id=" + id;
         }
 
-        // function onAddButtonClick(name, isShow) {
-        //     // location.href = location.origin + "/?action=add&cat_name=" + name + "&cat_isShow=" + isShow;
-        //     location.href = location.origin + name + " " + isShow;
-        //
-        // }
-        function testClick(name){
-            location.href = location.origin + "/1111" + name;
+        function onAddButtonClick(name, isShow) {
+            location.href = location.origin + "/?action=add&cat_name=" + name + "&cat_isShow=" + isShow;
         }
 
         function onDeleteButtonClick(id) {
             location.href = location.origin + "/?action=delete&cat_id=" + id;
+        }
+
+        function onAddEventClick(id) {
+            //
         }
     </script>
 </head>
@@ -195,23 +231,33 @@ $categories = $pdo->getRows();
         <th>PRIORITY</th>
         <th>IS SHOW</th>
         <th>CHANGE PRIORITY</th>
+        <th>DELETE</th>
+        <th>ADD EVENT</th>
     </tr>
     </thead>
     <tbody>
     <?php while ($row = $categories->fetch()): ?>
         <tr>
             <td><?php echo htmlspecialchars($row['name']) . "\t" ?></td>
-            <td><?php echo htmlspecialchars($row['id']); ?></td>
-            <td><?php echo htmlspecialchars($row['priority']); ?></td>
-            <td><?php echo htmlspecialchars($row['is_show']); ?></td>
+            <td align="center"><?php echo htmlspecialchars($row['id']); ?></td>
+            <td align="center"><?php echo htmlspecialchars($row['priority']); ?></td>
+            <td align="center"><?php echo htmlspecialchars($row['is_show']); ?></td>
             <td>
                 <div id="btn1" onclick="onUpButtonClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonUp">
                     Up
                 </div>
                 <div onclick="onDownButtonClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonDown">Down
                 </div>
+
+            </td>
+            <td>
                 <div onclick="onDeleteButtonClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonDelete">
                     Delete
+                </div>
+            </td>
+            <td>
+                <div onclick="onAddEventClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonAddEvent">
+                    Add Event
                 </div>
             </td>
         </tr>
@@ -221,12 +267,11 @@ $categories = $pdo->getRows();
 <form action='' method='GET' align="center">
     <input id="name" type='text' placeholder="Sport title" name="name"/>
     <input id="isShow" type='text' placeholder="Is show (1/0)" name="isShow"/>
-    <div onclick="testClick(document.getElementById("searchTxt").value)" class="buttonAdd" >
-        Add
+    <div onclick="onAddButtonClick(document.getElementById('name').value, document.getElementById('isShow').value)"
+         class="buttonAdd">
+        Add Sport
     </div>
 </form>
 </body>
 </div>
 </html>
-
-<!--            onclick="onAddButtonClick(document.getElementById('name').value document.getElementById('isShow').value)" class="buttonAdd">-->
