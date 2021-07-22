@@ -58,14 +58,6 @@ class MyPDO
         }
     }
 
-//    public function getRows()
-//    {
-//        $sql = 'SELECT * FROM `category` WHERE `is_show` >= 1 ORDER BY `priority`';
-//        $q = $this->_pdo->query($sql);
-//        $q->setFetchMode(PDO::FETCH_ASSOC);
-//        return $q;
-//    }
-
     public function getRowsJson()
     {
         $sql = 'SELECT * FROM `category` WHERE `is_show` >= 1 ORDER BY `priority`';

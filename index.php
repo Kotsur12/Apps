@@ -16,11 +16,15 @@ class Category
 
     private $name;
     private $priority;
+    private $id;
+    private $isShow;
 
-    public function __construct($name, $priority)
+    public function __construct($id, $name, $isShow, $priority)
     {
         $this->name = $name;
         $this->priority = $priority;
+        $this->isShow = $isShow;
+        $this->id = $id;
     }
 
     public function printCategory()
@@ -36,6 +40,16 @@ class Category
     public function getPriority()
     {
         return $this->priority;
+    }
+
+    public function getIsShow()
+    {
+        return $this->isShow;
+    }
+
+    public function getId()
+    {
+        return $this->id;
     }
 }
 
@@ -60,7 +74,7 @@ class MyPDO
 
         try {
             $this->_pdo = new PDO($dsn, $user, $pass, $options);
-            $this->_pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+            $this->_pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
             print "Error!: " . $e->getMessage() . "<br/>";
             die();
@@ -82,7 +96,7 @@ class MyPDO
         $current_priority = self::getCurrentPriority($id);
 
         //не повышаем, если итак максимальная
-        if ($current_priority != $max_priority){
+        if ($current_priority != $max_priority) {
             $sql = 'UPDATE `category` SET `priority` = `priority` + 1 WHERE `id` = ?';
             $stmt = $this->_pdo->prepare($sql);
             $stmt->execute([$id]);
@@ -98,7 +112,7 @@ class MyPDO
         $current_priority = self::getCurrentPriority($id);
 
         //не понижаем если минимальная (равна 1)
-        if ($current_priority != 1){
+        if ($current_priority != 1) {
             $sql = 'UPDATE `category` SET `priority` = `priority` - 1 WHERE `id` = ?';
             $stmt = $this->_pdo->prepare($sql);
             $stmt->execute([$id]);
@@ -152,11 +166,7 @@ class MyPDO
 
 
 try {
-    $host = 'localhost';
     $db = 'sport';
-    $user = 'devuser';
-    $pass = 'G-^Ai9oA?@shFMTj';
-    $charset = 'utf8';
 
     $pdo = new MyPDO();
 
@@ -175,8 +185,6 @@ if ((isset($_REQUEST['action'])) && isset($_REQUEST['cat_id'])) {
         case "delete":
             $pdo->deleteRow($_REQUEST['cat_id']);
             break;
-
-
     }
 }
 
@@ -187,7 +195,7 @@ if ((isset($_REQUEST['action'])) && isset($_REQUEST['cat_name']) && isset($_REQU
     }
 }
 
-$categories = $pdo->getRows();
+$categories = $pdo->getCategories();
 
 ?>
 
@@ -238,7 +246,7 @@ $categories = $pdo->getRows();
     <tbody>
     <?php while ($row = $categories->fetch()): ?>
         <tr>
-            <td><?php echo htmlspecialchars($row['name']) . "\t" ?></td>
+            <td><?php echo htmlspecialchars($row['name']) ?></td>
             <td align="center"><?php echo htmlspecialchars($row['id']); ?></td>
             <td align="center"><?php echo htmlspecialchars($row['priority']); ?></td>
             <td align="center"><?php echo htmlspecialchars($row['is_show']); ?></td>
