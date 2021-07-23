@@ -1,18 +1,16 @@
 <?php
-//error_reporting(E_ALL);
 
-
-class Category
+class User
 {
+    private $id;
+    private $identificator;
+    private $isValid;
 
-    private $name;
-    private $priority;
-
-    public function __construct($id, $name, $priority)
+    public function __construct($id, $identificator, $isValid)
     {
         $this->id = $id;
-        $this->name = $name;
-        $this->priority = $priority;
+        $this->identificator = $identificator;
+        $this->isValid = $isValid;
     }
 
     public function getId()
@@ -20,17 +18,16 @@ class Category
         return $this->id;
     }
 
-    public function getName()
+    public function getIdentificator()
     {
-        return $this->name;
+        return $this->identificator;
     }
 
-    public function getPriority()
+    public function getIsValid()
     {
-        return $this->priority;
+        return $this->isValid;
     }
 }
-
 
 class MyPDO
 {
@@ -59,20 +56,12 @@ class MyPDO
         }
     }
 
-    public function getRowsJson()
-    {
-        $sql = 'SELECT * FROM `category` WHERE `is_show` >= 1 ORDER BY `priority`';
-        $q = $this->_pdo->query($sql);
-
-        $arr = array();
-        while ($row = $q->fetch()):
-
-            $category = new Category($row['id'], $row['name'], $row['priority']);
-            $obj = array('id' => $category->getId(), 'name' => $category->getName(), 'priority' => $category->getPriority());
-            array_push($arr, $obj);
-        endwhile;
-
-        return json_encode($arr);
+    public function getIsUserValid($identificator){
+        $sql = 'SELECT * FROM `user` WHERE `identificator` = ?';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $stmt->execute([$identificator]);
+        return $stmt->fetch();
     }
 }
 
@@ -85,17 +74,15 @@ try {
 
     $pdo = new MyPDO();
 
-    $categoriesJson = $pdo->getRowsJson();
-
-    echo $categoriesJson;
-
 } catch (PDOException $e) {
     die("Could not connect to the database $db :" . $e->getMessage());
 }
 
-
-
-
-
-
-
+try {
+    if (isset($_REQUEST['identificator'])) {
+        $isUserValid = $pdo->getIsUserValid($_REQUEST['identificator']);
+        echo $isUserValid;
+    }
+} catch (Exception $e) {
+    echo "ERR";
+}

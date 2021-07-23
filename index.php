@@ -142,6 +142,18 @@ class MyPDO
         return $result['priority'];
     }
 
+    public function showCategory($catId){
+        $sql = 'UPDATE `category` SET `is_show` = 1 WHERE `id` = ?';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->execute([$catId]);
+    }
+
+    public function hideCategory($catId){
+        $sql = 'UPDATE `category` SET `is_show` = 0 WHERE `id` = ?';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->execute([$catId]);
+    }
+
     public function insert($name, $isShow)
     {
         $priority = self::getMaxPriority() + 1;
@@ -185,6 +197,12 @@ if ((isset($_REQUEST['action'])) && isset($_REQUEST['cat_id'])) {
         case "delete":
             $pdo->deleteRow($_REQUEST['cat_id']);
             break;
+        case "show":
+            $pdo->showCategory($_REQUEST['cat_id']);
+            break;
+        case "hide":
+            $pdo->hideCategory($_REQUEST['cat_id']);
+            break;
     }
 }
 
@@ -227,6 +245,13 @@ $categories = $pdo->getRows();
         function onAddEventClick(id) {
             location.href = location.origin + "/events.php?cat_id=" + id;
         }
+
+        function onShowClick(id) {
+            location.href = location.origin + "/?action=show&cat_id=" + id;
+        }
+        function onHideClick(id) {
+            location.href = location.origin + "/?action=hide&cat_id=" + id;
+        }
     </script>
 </head>
 <body>
@@ -240,6 +265,7 @@ $categories = $pdo->getRows();
         <th>IS SHOW</th>
         <th>CHANGE PRIORITY</th>
         <th>DELETE</th>
+        <th>VISIBILITY</th>
         <th>ADD EVENT</th>
     </tr>
     </thead>
@@ -261,6 +287,14 @@ $categories = $pdo->getRows();
             <td>
                 <div onclick="onDeleteButtonClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonDelete">
                     Delete
+                </div>
+            </td>
+            <td>
+                <div onclick="onShowClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonVisibility">
+                    Show
+                </div>
+                <div onclick="onHideClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonVisibility">
+                    Hide
                 </div>
             </td>
             <td>

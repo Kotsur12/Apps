@@ -57,14 +57,10 @@ class MyPDO
         return $stmt;
     }
 
-
-//    public function addEvent($cat_id, $com_1, $com_2, $win_1, $draw, $win_2, $link, $event_date)
     public function addEvent($cat_id, $com_1, $com_2, $win_1, $draw, $win_2, $link, $event_date)
     {
-//        $sql = 'INSERT INTO `event` (`cat_id`,`command_1`,`command_2`,`win_1`,`draw`,`win_2`,`link`,`event_date`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
         $sql = 'INSERT INTO `event` (`cat_id`, `command_1`, `command_2`, `win_1`, `draw`, `win_2`, `link`, `event_time`) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)';
         $stmt = $this->_pdo->prepare($sql);
-//        $stmt->execute([$cat_id, $com_1, $com_2, $win_1, $draw, $win_2, $link, $event_date]);
         $stmt->execute([$cat_id, $com_1, $com_2, $win_1, $draw, $win_2, $link, $event_date]);
     }
 
