@@ -39,20 +39,41 @@ class MyPDO
         }
     }
 
-    public function getCategories()
+    public function getEvents($catId)
     {
-        $sql = 'SELECT * FROM `category` ORDER BY `priority` DESC ';
-        $q = $this->_pdo->query($sql);
-        $q->setFetchMode(PDO::FETCH_ASSOC);
-        return $q;
+        $sql = 'SELECT * FROM `event` WHERE `cat_id` = ? ORDER BY `event_time`';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $stmt->execute([$catId]);
+        return $stmt;
     }
 
-    public function getEvents()
+    public function getCurrentCategory($catId)
     {
-        $sql = 'SELECT * FROM `event`';
-        $q = $this->_pdo->query($sql);
-        $q->setFetchMode(PDO::FETCH_ASSOC);
-        return $q;
+        $sql = 'SELECT * FROM `category` WHERE `id` = ?';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $stmt->execute([$catId]);
+        return $stmt;
+    }
+
+
+//    public function addEvent($cat_id, $com_1, $com_2, $win_1, $draw, $win_2, $link, $event_date)
+    public function addEvent($cat_id, $com_1, $com_2, $win_1, $draw, $win_2, $link, $event_date)
+    {
+//        $sql = 'INSERT INTO `event` (`cat_id`,`command_1`,`command_2`,`win_1`,`draw`,`win_2`,`link`,`event_date`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        $sql = 'INSERT INTO `event` (`cat_id`, `command_1`, `command_2`, `win_1`, `draw`, `win_2`, `link`, `event_time`) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)';
+        $stmt = $this->_pdo->prepare($sql);
+//        $stmt->execute([$cat_id, $com_1, $com_2, $win_1, $draw, $win_2, $link, $event_date]);
+        $stmt->execute([$cat_id, $com_1, $com_2, $win_1, $draw, $win_2, $link, $event_date]);
+    }
+
+    public function deleteEvent($id)
+    {
+        console_log($_REQUEST['cat_id'] . "   " . $_REQUEST['id']);
+        $sql = 'DELETE FROM `event` WHERE `id` = ?';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->execute([$id]);
     }
 }
 
@@ -66,7 +87,23 @@ try {
     die("Could not connect to the database $db :" . $e->getMessage());
 }
 
-$events = $pdo->getEvents();
+
+if (isset($_REQUEST['action'])) {
+    switch ($_REQUEST['action']) {
+        case "add":
+            $pdo->addEvent($_REQUEST['cat_id'], $_REQUEST['com_1'], $_REQUEST['com_2'], $_REQUEST['win_1'], $_REQUEST['draw'], $_REQUEST['win_2'], $_REQUEST['link'], $_REQUEST['event_date']);
+        case "delete":
+            $pdo->deleteEvent($_REQUEST['id']);
+
+    }
+}
+
+if (isset($_REQUEST['cat_id'])) {
+    $events = $pdo->getEvents($_REQUEST['cat_id']);
+    $currentCategory = $pdo->getCurrentCategory($_REQUEST['cat_id']);
+    $cC = $currentCategory->fetch();
+}
+
 
 ?>
 
@@ -79,16 +116,24 @@ $events = $pdo->getEvents();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script type="text/javascript">
-        function onAddEventClick(id) {
-            //
+        function onAddButtonClick(cat_id, com_1, com_2, win_1, draw, win_2, link, event_date) {
+            location.href = location.origin + "/events.php?action=add&cat_id=" + cat_id + "&com_1=" + com_1 + "&com_2=" + com_2 + "&win_1=" + win_1 + "&draw=" + draw + "&win_2=" + win_2 + "&link=" + link + "&event_date=" + event_date;
         }
-        function onDeleteEventClick(id) {
-            //
+
+        function onDeleteEventClick(id, cat_id) {
+            location.href = location.origin + "/events.php?action=delete&cat_id=" + cat_id + "&id=" + id;
+        }
+
+        function onHomeClick() {
+            location.href = location.origin;
         }
     </script>
 </head>
 <body>
-<h1 align="center">Sport</h1>
+<div onclick="onHomeClick()" class="buttonHome">
+    HOME
+</div>
+<h1 align="center"><?php echo htmlspecialchars($cC['name'] . " "); ?>Events</h1>
 <table class="table table-bordered table-condensed" border="2" align="center">
     <thead>
     <tr>
@@ -117,7 +162,8 @@ $events = $pdo->getEvents();
             <td align="center"><?php echo htmlspecialchars($row['link']); ?></td>
             <td align="center"><?php echo htmlspecialchars($row['event_time']); ?></td>
             <td>
-                <div onclick="onDeleteEventClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonDelete">
+                <div onclick="onDeleteEventClick(<?php echo htmlspecialchars($row['id'] . "," . $row['cat_id']); ?>)"
+                     class="buttonDelete">
                     Delete
                 </div>
             </td>
@@ -126,7 +172,6 @@ $events = $pdo->getEvents();
     </tbody>
 </table>
 <form action='' method='GET' align="center">
-    <input id="name" type='text' placeholder="Event title" name="name"/>
     <input id="command_1" type='text' placeholder="Command 1" name="command_1"/>
     <input id="command_2" type='text' placeholder="Command 2" name="command_2"/>
     <input id="win_1" type='text' placeholder="Win for Command 1" name="win_1"/>
@@ -134,9 +179,7 @@ $events = $pdo->getEvents();
     <input id="win_2" type='text' placeholder="Win for Command 2" name="win_2"/>
     <input id="link" type='text' placeholder="Link" name="link"/>
     <input id="event_time" type='text' placeholder="Event time" name="event_time"/>
-
-
-    <div onclick="onAddButtonClick(document.getElementById('name').value, document.getElementById('isShow').value)"
+    <div onclick="onAddButtonClick(<?php echo htmlspecialchars($cC['id']) ?>, document.getElementById('command_1').value, document.getElementById('command_2').value, document.getElementById('win_1').value, document.getElementById('draw').value, document.getElementById('win_2').value, document.getElementById('link').value, document.getElementById('event_time').value)"
          class="buttonAdd">
         Add Event
     </div>

@@ -195,7 +195,7 @@ if ((isset($_REQUEST['action'])) && isset($_REQUEST['cat_name']) && isset($_REQU
     }
 }
 
-$categories = $pdo->getCategories();
+$categories = $pdo->getRows();
 
 ?>
 
@@ -225,7 +225,7 @@ $categories = $pdo->getCategories();
         }
 
         function onAddEventClick(id) {
-            //
+            location.href = location.origin + "/events.php?cat_id=" + id;
         }
     </script>
 </head>
