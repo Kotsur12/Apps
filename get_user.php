@@ -56,12 +56,20 @@ class MyPDO
         }
     }
 
-    public function getIsUserValid($identificator){
+    public function getIsUserValid($identificator)
+    {
         $sql = 'SELECT * FROM `user` WHERE `identificator` = ?';
         $stmt = $this->_pdo->prepare($sql);
         $stmt->setFetchMode(PDO::FETCH_ASSOC);
         $stmt->execute([$identificator]);
         return $stmt->fetch();
+    }
+
+    public function registerNewUser($identificator)
+    {
+        $sql = 'INSERT INTO `user` (`identificator`, `is_valid`) VALUES (?, ?)';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->execute([$identificator, 1]);
     }
 }
 
@@ -81,7 +89,13 @@ try {
 try {
     if (isset($_REQUEST['identificator'])) {
         $isUserValid = $pdo->getIsUserValid($_REQUEST['identificator']);
-        echo $isUserValid;
+        if ($isUserValid != null) {
+            echo htmlspecialchars($isUserValid['is_valid']);
+        } else {
+            $pdo->registerNewUser($_REQUEST['identificator']);
+            //Новый пользователь всегда valid
+            echo 1;
+       }
     }
 } catch (Exception $e) {
     echo "ERR";
