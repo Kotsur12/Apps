@@ -142,13 +142,15 @@ class MyPDO
         return $result['priority'];
     }
 
-    public function showCategory($catId){
+    public function showCategory($catId)
+    {
         $sql = 'UPDATE `category` SET `is_show` = 1 WHERE `id` = ?';
         $stmt = $this->_pdo->prepare($sql);
         $stmt->execute([$catId]);
     }
 
-    public function hideCategory($catId){
+    public function hideCategory($catId)
+    {
         $sql = 'UPDATE `category` SET `is_show` = 0 WHERE `id` = ?';
         $stmt = $this->_pdo->prepare($sql);
         $stmt->execute([$catId]);
@@ -249,6 +251,7 @@ $categories = $pdo->getRows();
         function onShowClick(id) {
             location.href = location.origin + "/?action=show&cat_id=" + id;
         }
+
         function onHideClick(id) {
             location.href = location.origin + "/?action=hide&cat_id=" + id;
         }
@@ -289,13 +292,16 @@ $categories = $pdo->getRows();
                     Delete
                 </div>
             </td>
-            <td>
-                <div onclick="onShowClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonVisibility">
-                    Show
-                </div>
-                <div onclick="onHideClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonVisibility">
-                    Hide
-                </div>
+            <td><?php if ($row['is_show'] < 1) { ?>
+                    <div onclick="onShowClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonVisibility">
+                        Show
+                    </div>
+                    <?php } else { ?>
+                    <div onclick="onHideClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonVisibility">
+                        Hide
+                    </div>
+                <?php } ?>
+
             </td>
             <td>
                 <div onclick="onAddEventClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonAddEvent">
