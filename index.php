@@ -211,7 +211,7 @@ if ((isset($_REQUEST['action'])) && isset($_REQUEST['cat_id'])) {
 if ((isset($_REQUEST['action'])) && isset($_REQUEST['cat_name']) && isset($_REQUEST['cat_isShow'])) {
     switch ($_REQUEST['action']) {
         case "add":
-            $pdo->insert($_REQUEST['cat_name'], $_REQUEST['cat_isShow']);
+            $pdo->insertCountry($_REQUEST['cat_name'], $_REQUEST['cat_isShow']);
     }
 }
 
