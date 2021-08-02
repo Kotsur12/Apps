@@ -143,8 +143,6 @@ try {
     die("Could not connect to the database $db :" . $e->getMessage());
 }
 
-//$file = file_get_contents('./Countries.txt', true);
-//$data = json_decode($file, true);
 function getCountriesFromApi(){
     $curl = curl_init();
 
@@ -173,7 +171,6 @@ function getCountriesFromApi(){
     }
 
     return json_decode($response, true);
-
 }
 
 $countries = [];
