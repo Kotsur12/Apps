@@ -376,8 +376,9 @@ try {
 //    if (isset($_REQUEST['country'])) {
 //        $hasTeams = $pdo->findTeams($_REQUEST['country']);
 //        if ($hasTeams == 0 or $hasTeams == null) {
-////            $teamsApi = getTeamsByCountryFromAPI($_REQUEST['country']);
-//    $teamsApi = getFakeTeams($_REQUEST['country']);
+//            $teamsApi = getTeamsByCountryFromAPI($_REQUEST['country']);
+//    echo getTeamsByCountryFromAPI($_REQUEST['country']);
+    $teamsApi = getFakeTeams($_REQUEST['country']);
 //    $pdo->saveTeams($teamsApi);
 //        }
 //    $pdo->deleteEmptyRows();
