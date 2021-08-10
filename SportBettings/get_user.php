@@ -96,6 +96,8 @@ try {
             //Новый пользователь всегда valid
             echo 1;
        }
+    }else{
+        echo "PARAMETERS NOT SET";
     }
 } catch (Exception $e) {
     echo "ERR";

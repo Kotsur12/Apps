@@ -137,6 +137,8 @@ try {
     if (isset($_REQUEST['cat_id'])) {
         $eventsJson = $pdo->getEventsJson($_REQUEST['cat_id']);
         echo $eventsJson;
+    } else {
+        echo "PARAMETERS NOT SET";
     }
 } catch (Exception $e) {
     echo "ERR";

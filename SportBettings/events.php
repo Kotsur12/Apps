@@ -113,15 +113,15 @@ if (isset($_REQUEST['cat_id'])) {
     <link rel="stylesheet" href="style.css">
     <script type="text/javascript">
         function onAddButtonClick(cat_id, com_1, com_2, win_1, draw, win_2, link, event_date) {
-            location.href = location.origin + "/events.php?action=add&cat_id=" + cat_id + "&com_1=" + com_1 + "&com_2=" + com_2 + "&win_1=" + win_1 + "&draw=" + draw + "&win_2=" + win_2 + "&link=" + link + "&event_date=" + event_date;
+            location.href = location.origin + "/SportBettings" + "/events.php?action=add&cat_id=" + cat_id + "&com_1=" + com_1 + "&com_2=" + com_2 + "&win_1=" + win_1 + "&draw=" + draw + "&win_2=" + win_2 + "&link=" + link + "&event_date=" + event_date;
         }
 
         function onDeleteEventClick(id, cat_id) {
-            location.href = location.origin + "/events.php?action=delete&cat_id=" + cat_id + "&id=" + id;
+            location.href = location.origin + "/SportBettings" + "/events.php?action=delete&cat_id=" + cat_id + "&id=" + id;
         }
 
         function onHomeClick() {
-            location.href = location.origin;
+            location.href = location.origin + "/SportBettings/webinterface.php";
         }
     </script>
 </head>
