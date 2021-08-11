@@ -71,6 +71,13 @@ class MyPDO
         $stmt = $this->_pdo->prepare($sql);
         $stmt->execute([$identificator, 1]);
     }
+
+    public function getPrediction(){
+        $sql = 'SELECT `prediction_visibility` from `prediction`';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
 }
 
 try {
@@ -87,18 +94,20 @@ try {
 }
 
 try {
-    if (isset($_REQUEST['identificator'])) {
-        $isUserValid = $pdo->getIsUserValid($_REQUEST['identificator']);
-        if ($isUserValid != null) {
-            echo htmlspecialchars($isUserValid['is_valid']);
-        } else {
-            $pdo->registerNewUser($_REQUEST['identificator']);
-            //Новый пользователь всегда valid
-            echo 1;
-       }
-    }else{
-        echo "PARAMETERS NOT SET";
-    }
+    $isVisible = $pdo->getPrediction();
+    echo htmlspecialchars($isVisible['prediction_visibility']);
+//    if (isset($_REQUEST['identificator'])) {
+//        $isUserValid = $pdo->getIsUserValid($_REQUEST['identificator']);
+//        if ($isUserValid != null) {
+//            echo htmlspecialchars($isUserValid['is_valid']);
+//        } else {
+//            $pdo->registerNewUser($_REQUEST['identificator']);
+//            //Новый пользователь всегда valid
+//            echo 1;
+//       }
+//    }else{
+//        echo "PARAMETERS NOT SET";
+//    }
 } catch (Exception $e) {
     echo "ERR";
 }

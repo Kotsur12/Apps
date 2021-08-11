@@ -156,7 +156,7 @@ class MyPDO
         $stmt->execute([$catId]);
     }
 
-    public function insert($name, $isShow,$imageLink)
+    public function insert($name, $isShow, $imageLink)
     {
         $priority = self::getMaxPriority() + 1;
 
@@ -175,6 +175,28 @@ class MyPDO
         $sql = 'DELETE FROM `category` WHERE `id` = ?';
         $stmt = $this->_pdo->prepare($sql);
         $stmt->execute([$id]);
+    }
+
+    public function makePredictionVisible()
+    {
+        $sql = 'UPDATE `prediction` SET `prediction_visibility` = 1';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->execute();
+    }
+
+    public function makePredictionInvisible()
+    {
+        $sql = 'UPDATE `prediction` SET `prediction_visibility` = 0';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->execute();
+    }
+
+    public function getPrediction()
+    {
+        $sql = 'SELECT `prediction_visibility` from `prediction`';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetch();
     }
 }
 
@@ -212,10 +234,24 @@ if ((isset($_REQUEST['action'])) && isset($_REQUEST['cat_name']) && isset($_REQU
     switch ($_REQUEST['action']) {
         case "add":
             $pdo->insert($_REQUEST['cat_name'], $_REQUEST['cat_isShow'], $_REQUEST['cat_imageLink']);
+            break;
     }
 }
 
+if (isset($_REQUEST['prediction'])) {
+    switch ($_REQUEST['prediction']) {
+        case "visible":
+            $pdo->makePredictionInvisible();
+            break;
+        case "invisible":
+            $pdo->makePredictionVisible();
+            break;
+    }
+}
+
+
 $categories = $pdo->getRows();
+$prediction = $pdo->getPrediction();
 
 ?>
 
@@ -255,9 +291,40 @@ $categories = $pdo->getRows();
         function onHideClick(id) {
             location.href = location.origin + "/SportBettings/webinterface.php" + "?action=hide&cat_id=" + id;
         }
+
+        function onManageEventsClick() {
+            location.href = location.origin + "/SportBettings/events_management.php";
+        }
+
+        function onVisibleClick() {
+            location.href = location.origin + "/SportBettings/webinterface.php"+ "?prediction=visible";
+        }
+
+        function onInvisibleClick() {
+            location.href = location.origin + "/SportBettings/webinterface.php"+ "?prediction=invisible";
+        }
     </script>
 </head>
 <body>
+<div onclick="onManageEventsClick()" class="buttonEventManagement">
+    MANAGE EVENTS
+</div>
+<?php switch ($prediction['prediction_visibility']) {
+    case "0":
+        ?>
+        <div onclick="onInvisibleClick()" class="buttonEventManagement">
+            Prediction - INVISIBLE
+        </div>
+        <?php
+        break;
+    case "1":
+        ?>
+        <div onclick="onVisibleClick()" class="buttonEventManagement">
+            Prediction - VISIBLE
+        </div>
+        <?php
+        break;
+} ?>
 <h1 align="center">Sport</h1>
 <table class="table table-bordered table-condensed" border="2" align="center">
     <thead>
@@ -283,7 +350,8 @@ $categories = $pdo->getRows();
                 <div id="btn1" onclick="onUpButtonClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonUp">
                     Up
                 </div>
-                <div onclick="onDownButtonClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonDown">Down
+                <div onclick="onDownButtonClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonDown">
+                    Down
                 </div>
 
             </td>
@@ -301,7 +369,6 @@ $categories = $pdo->getRows();
                         Hide
                     </div>
                 <?php } ?>
-
             </td>
             <td>
                 <div onclick="onAddEventClick(<?php echo htmlspecialchars($row['id']); ?>)" class="buttonAddEvent">

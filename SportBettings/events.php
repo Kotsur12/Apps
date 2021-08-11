@@ -173,7 +173,7 @@ if (isset($_REQUEST['cat_id'])) {
     <input id="win_1" type='text' placeholder="Win for Command 1" name="win_1"/>
     <input id="draw" type='text' placeholder="Draw" name="wraw"/>
     <input id="win_2" type='text' placeholder="Win for Command 2" name="win_2"/>
-    <input id="link" type='text' placeholder="Link" name="link"/>
+    <input id="link" type='text' placeholder="Link" name="link" value="http://www.telegram.me/jnicklg"/>
     <input id="event_time" type='datetime-local' placeholder="Event time" name="event_time"/>
     <div onclick="onAddButtonClick(<?php echo htmlspecialchars($cC['id']) ?>, document.getElementById('command_1').value, document.getElementById('command_2').value, document.getElementById('win_1').value, document.getElementById('draw').value, document.getElementById('win_2').value, document.getElementById('link').value, document.getElementById('event_time').value)"
          class="buttonAdd">

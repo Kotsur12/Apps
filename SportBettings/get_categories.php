@@ -4,15 +4,23 @@
 
 class Category
 {
-
+    private $id;
     private $name;
     private $priority;
+    private $image;
 
-    public function __construct($id, $name, $priority)
+
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    public function __construct($id, $name, $priority, $image)
     {
         $this->id = $id;
         $this->name = $name;
         $this->priority = $priority;
+        $this->image = $image;
     }
 
     public function getId()
@@ -67,8 +75,8 @@ class MyPDO
         $arr = array();
         while ($row = $q->fetch()):
 
-            $category = new Category($row['id'], $row['name'], $row['priority']);
-            $obj = array('id' => $category->getId(), 'name' => $category->getName(), 'priority' => $category->getPriority());
+            $category = new Category($row['id'], $row['name'], $row['priority'], $row['image']);
+            $obj = array('id' => $category->getId(), 'name' => $category->getName(), 'priority' => $category->getPriority(),  'image' => $category->getImage());
             array_push($arr, $obj);
         endwhile;
 

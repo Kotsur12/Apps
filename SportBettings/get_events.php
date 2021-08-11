@@ -118,6 +118,40 @@ class MyPDO
 
         return json_encode($arr);
     }
+
+    public function getTopEventsJson()
+    {
+        $sql = 'SELECT * FROM `event` WHERE `id` IN (SELECT `event_id` FROM `top`) ORDER BY `event_time`';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $stmt->execute();
+
+        $arr = array();
+        while ($row = $stmt->fetch()):
+            $event = new Event($row['id'], $row['cat_id'], $row['command_1'], $row['command_2'], $row['win_1'], $row['draw'], $row['win_2'], $row['link'], $row['event_time']);
+            $obj = array('id' => $event->getId(), 'cat_id' => $event->getCategoryId(), 'command_1' => $event->getCommand1(), 'command_2' => $event->getCommand2(), 'win_1' => $event->getWin1(), 'draw' => $event->getDraw(), 'win_2' => $event->getWin2(), 'link' => $event->getLink(), 'event_time' => $event->getEventTime());
+            array_push($arr, $obj);
+        endwhile;
+
+        return json_encode($arr);
+    }
+
+    public function getLiveEventsJson()
+    {
+        $sql = 'SELECT * FROM `event` WHERE `id` IN (SELECT `event_id` FROM `live`) ORDER BY `event_time`';
+        $stmt = $this->_pdo->prepare($sql);
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $stmt->execute();
+
+        $arr = array();
+        while ($row = $stmt->fetch()):
+            $event = new Event($row['id'], $row['cat_id'], $row['command_1'], $row['command_2'], $row['win_1'], $row['draw'], $row['win_2'], $row['link'], $row['event_time']);
+            $obj = array('id' => $event->getId(), 'cat_id' => $event->getCategoryId(), 'command_1' => $event->getCommand1(), 'command_2' => $event->getCommand2(), 'win_1' => $event->getWin1(), 'draw' => $event->getDraw(), 'win_2' => $event->getWin2(), 'link' => $event->getLink(), 'event_time' => $event->getEventTime());
+            array_push($arr, $obj);
+        endwhile;
+
+        return json_encode($arr);
+    }
 }
 
 try {
@@ -134,7 +168,19 @@ try {
 }
 
 try {
-    if (isset($_REQUEST['cat_id'])) {
+    if (isset($_REQUEST['type'])) {
+        switch ($_REQUEST['type']) {
+            case "top":
+                $eventsJson = $pdo->getTopEventsJson();
+                echo $eventsJson;
+                break;
+            case "live":
+                $eventsJson = $pdo->getLiveEventsJson();
+                echo $eventsJson;
+                break;
+        }
+
+    } elseif (isset($_REQUEST['cat_id'])) {
         $eventsJson = $pdo->getEventsJson($_REQUEST['cat_id']);
         echo $eventsJson;
     } else {
@@ -143,7 +189,4 @@ try {
 } catch (Exception $e) {
     echo "ERR";
 }
-
-
-
 
