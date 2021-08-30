@@ -4,19 +4,28 @@
 
 class Category
 {
-
+    private $id;
     private $name;
     private $priority;
+    private $image;
 
-    public function __construct($name, $priority)
+
+    public function getImage()
     {
-        $this->name = $name;
-        $this->priority = $priority;
+        return $this->image;
     }
 
-    public function printCategory()
+    public function __construct($id, $name, $priority, $image)
     {
-        echo $this->name . ' ' . $this->priority;
+        $this->id = $id;
+        $this->name = $name;
+        $this->priority = $priority;
+        $this->image = $image;
+    }
+
+    public function getId()
+    {
+        return $this->id;
     }
 
     public function getName()
@@ -58,14 +67,6 @@ class MyPDO
         }
     }
 
-//    public function getRows()
-//    {
-//        $sql = 'SELECT * FROM `category` WHERE `is_show` >= 1 ORDER BY `priority`';
-//        $q = $this->_pdo->query($sql);
-//        $q->setFetchMode(PDO::FETCH_ASSOC);
-//        return $q;
-//    }
-
     public function getRowsJson()
     {
         $sql = 'SELECT * FROM `category` WHERE `is_show` >= 1 ORDER BY `priority`';
@@ -74,8 +75,8 @@ class MyPDO
         $arr = array();
         while ($row = $q->fetch()):
 
-            $category = new Category($row['name'], $row['priority']);
-            $obj = array('name' => $category->getName(), 'priority' => $category->getPriority());
+            $category = new Category($row['id'], $row['name'], $row['priority'], $row['image']);
+            $obj = array('id' => $category->getId(), 'name' => $category->getName(), 'priority' => $category->getPriority(),  'image' => $category->getImage());
             array_push($arr, $obj);
         endwhile;
 

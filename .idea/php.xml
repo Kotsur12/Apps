@@ -5,4 +5,7 @@
       <path value="$PROJECT_DIR$/../../../../Program Files/php-8.0.8" />
     </include_path>
   </component>
+  <component name="PhpProjectSharedConfiguration" php_language_level="7">
+    <option name="suggestChangeDefaultLanguageLevel" value="false" />
+  </component>
 </project>
